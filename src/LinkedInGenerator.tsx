@@ -552,16 +552,14 @@ Output ONLY the final proofread post text.`;
           <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
 
             {/* Main mode tabs */}
-            {(["text", "image"] as const).map(tab => (
-              <button key={tab} onClick={() => setMainTab(tab)} style={{
-                padding: "8px 18px", borderRadius: "20px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 600,
-                background: mainTab === tab ? (tab === "image" ? "#6C63FF" : accentColor) : "rgba(255,255,255,0.08)",
-                color: mainTab === tab ? "#fff" : "rgba(255,255,255,0.5)",
-                transition: "all 0.3s", fontFamily: "'Plus Jakarta Sans', sans-serif",
-              }}>
-                {tab === "text" ? "✍️ Text Post" : "🖼️ Image Post"}
-              </button>
-            ))}
+            {/* Image Post tab temporarily disabled */}
+            <button onClick={() => setMainTab("text")} style={{
+              padding: "8px 18px", borderRadius: "20px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 600,
+              background: accentColor, color: "#fff",
+              transition: "all 0.3s", fontFamily: "'Plus Jakarta Sans', sans-serif",
+            }}>
+              ✍️ Text Post
+            </button>
 
             {/* Step tabs (text mode only) */}
             {mainTab === "text" && ([1, 2] as const).map(s => (
