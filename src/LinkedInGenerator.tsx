@@ -481,6 +481,43 @@ Output ONLY the final proofread post text.`;
   return (
     <div style={{ minHeight: "100vh", background: "#0D0D0D", fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#fff", position: "relative", overflow: "hidden" }}>
 
+      <style>{`
+        /* ── Responsive: iPad Air 5 (820px portrait) ── */
+        @media (max-width: 860px) {
+          .app-header { padding: 14px 20px !important; }
+          .tab-content { padding: 24px 20px !important; }
+          .usage-modal-box { max-width: calc(100% - 32px) !important; }
+          .format-hook-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
+        }
+        /* ── Responsive: iPhone 14 Pro Max (430px) ── */
+        @media (max-width: 480px) {
+          .app-header {
+            padding: 10px 14px !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+          }
+          .header-actions {
+            flex-wrap: wrap !important;
+            gap: 5px !important;
+            width: 100% !important;
+          }
+          .header-actions > button {
+            padding: 6px 10px !important;
+            font-size: 10px !important;
+          }
+          .header-subtitle { display: none !important; }
+          .tab-content { padding: 14px !important; }
+          .usage-modal-box {
+            margin: 10px !important;
+            border-radius: 16px !important;
+            max-width: calc(100% - 20px) !important;
+          }
+          .usage-modal-box > div { padding: 16px !important; }
+          .stats-grid { grid-template-columns: 1fr 1fr !important; }
+          .format-hook-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
+          textarea, input { font-size: 16px !important; } /* prevent iOS zoom */
+        }
+      `}</style>
       {/* Floating BG blobs */}
       {particles.map(p => (
         <div key={p.id} style={{
@@ -496,7 +533,7 @@ Output ONLY the final proofread post text.`;
       <div style={{ position: "relative", zIndex: 1 }}>
 
         {/* ── Header ── */}
-        <div style={{ padding: "20px 40px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between", backdropFilter: "blur(10px)", background: "rgba(13,13,13,0.6)" }}>
+        <div className="app-header" style={{ padding: "20px 40px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between", backdropFilter: "blur(10px)", background: "rgba(13,13,13,0.6)" }}>
           <div
             onClick={() => { setMainTab("text"); setStep(1); }}
             style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}
@@ -508,11 +545,11 @@ Output ONLY the final proofread post text.`;
               <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, letterSpacing: "-0.5px" }}>
                 PostCraft <span style={{ color: accentColor }}>AI</span>
               </div>
-              <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", letterSpacing: "1px" }}>LinkedIn Post Generator · Claude Sonnet 4.6</div>
+              <div className="header-subtitle" style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", letterSpacing: "1px" }}>LinkedIn Post Generator · Claude Sonnet 4.6</div>
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
 
             {/* Main mode tabs */}
             {(["text", "image"] as const).map(tab => (
@@ -589,7 +626,7 @@ Output ONLY the final proofread post text.`;
 
           return (
             <div onClick={() => setUsageOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <div onClick={e => e.stopPropagation()} style={{ background: "#111", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "24px", width: "100%", maxWidth: "520px", boxShadow: "0 40px 100px rgba(0,0,0,0.9)", animation: "modalIn 0.25s ease", overflow: "hidden" }}>
+              <div onClick={e => e.stopPropagation()} className="usage-modal-box" style={{ background: "#111", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "24px", width: "100%", maxWidth: "520px", boxShadow: "0 40px 100px rgba(0,0,0,0.9)", animation: "modalIn 0.25s ease", overflow: "hidden" }}>
 
                 {/* Header */}
                 <div style={{ padding: "24px 28px 18px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -633,7 +670,7 @@ Output ONLY the final proofread post text.`;
                   </div>
 
                   {/* Stats grid */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+                  <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
                     {[
                       { label: "Posts Generated", value: requestCount.toLocaleString(),            color: "#6C63FF", icon: "✍️" },
                       { label: "Input Tokens",     value: totalInputTokens.toLocaleString(),        color: "#F7931E", icon: "📥" },
@@ -713,7 +750,7 @@ Output ONLY the final proofread post text.`;
             IMAGE POST TAB
         ══════════════════════════════════════════════ */}
         {mainTab === "image" && (
-          <div style={{ padding: "36px 40px", maxWidth: "900px", margin: "0 auto" }}>
+          <div className="tab-content" style={{ padding: "36px 40px", maxWidth: "900px", margin: "0 auto" }}>
 
             {/* Style selector */}
             <ConfigSection label="IMAGE STYLE" emoji="🎨">
@@ -867,7 +904,7 @@ Output ONLY the final proofread post text.`;
           <>
             {/* ── STEP 1: Configure ── */}
             {step === 1 && (
-              <div style={{ padding: "36px 40px", maxWidth: "1200px", margin: "0 auto" }}>
+              <div className="tab-content" style={{ padding: "36px 40px", maxWidth: "1200px", margin: "0 auto" }}>
 
                 <ConfigSection label="TONE OF VOICE" emoji="🎭">
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
@@ -941,7 +978,7 @@ Output ONLY the final proofread post text.`;
                   </ConfigSection>
                 )}
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px" }}>
+                <div className="format-hook-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px" }}>
                   <ConfigSection label="FORMAT" emoji="📝">
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       {FORMATS.map(f => (
@@ -1017,7 +1054,7 @@ Output ONLY the final proofread post text.`;
 
             {/* ── STEP 2: Preview ── */}
             {step === 2 && (
-              <div ref={resultRef} style={{ padding: "36px 40px", maxWidth: "800px", margin: "0 auto" }}>
+              <div ref={resultRef} className="tab-content" style={{ padding: "36px 40px", maxWidth: "800px", margin: "0 auto" }}>
 
                 {/* Config summary pills */}
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "28px" }}>
