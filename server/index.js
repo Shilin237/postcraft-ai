@@ -196,6 +196,9 @@ app.get("/api/image/generate", async (req, res) => {
   }
 });
 
+// ── Health check ─────────────────────────────────────────────────────────────
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
+
 // ── Serve built frontend in production ───────────────────────────────────────
 if (IS_PROD) {
   const distPath = resolve(__dirname, "../dist");
