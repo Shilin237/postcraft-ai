@@ -201,7 +201,7 @@ if (IS_PROD) {
   const distPath = resolve(__dirname, "../dist");
   if (existsSync(distPath)) {
     app.use(express.static(distPath));
-    app.get("*", (_req, res) => res.sendFile(resolve(distPath, "index.html")));
+    app.get("/{*path}", (_req, res) => res.sendFile(resolve(distPath, "index.html")));
   }
 }
 
