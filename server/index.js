@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -18,12 +18,19 @@ try {
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: /^http:\/\/localhost:\d+$/, credentials: true }));
+
+const IS_PROD = process.env.NODE_ENV === "production";
+const APP_URL = process.env.APP_URL || "http://localhost:3001";
+
+app.use(cors({
+  origin: IS_PROD ? APP_URL : /^http:\/\/localhost:\d+$/,
+  credentials: true,
+}));
 
 const CLIENT_ID     = process.env.LI_CLIENT_ID;
 const CLIENT_SECRET = process.env.LI_CLIENT_SECRET;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-const REDIRECT_URI  = "http://localhost:3001/auth/linkedin/callback";
+const REDIRECT_URI  = `${APP_URL}/auth/linkedin/callback`;
 
 // ── Claude API proxy (key never leaves server) ──────────────────────────────
 app.post("/api/generate", async (req, res) => {
@@ -72,8 +79,7 @@ app.get("/auth/linkedin/callback", async (req, res) => {
   const { code, error, error_description } = req.query;
 
   if (error) {
-    const frontendPort = process.env.VITE_PORT || 5173;
-    return res.redirect(`http://localhost:${frontendPort}?li_error=${encodeURIComponent(error_description || error)}`);
+    return res.redirect(`${APP_URL}?li_error=${encodeURIComponent(error_description || error)}`);
   }
 
   try {
@@ -105,15 +111,9 @@ app.get("/auth/linkedin/callback", async (req, res) => {
     userId = userData.sub;
     liName = userData.name || "LinkedIn User";
 
-    const frontendPort = process.env.VITE_PORT || 5173;
-    res.redirect(
-      `http://localhost:${frontendPort}?li_connected=1&li_name=${encodeURIComponent(liName)}`
-    );
+    res.redirect(`${APP_URL}?li_connected=1&li_name=${encodeURIComponent(liName)}`);
   } catch (err) {
-    const frontendPort = process.env.VITE_PORT || 5173;
-    res.redirect(
-      `http://localhost:${frontendPort}?li_error=${encodeURIComponent(err.message)}`
-    );
+    res.redirect(`${APP_URL}?li_error=${encodeURIComponent(err.message)}`);
   }
 });
 
@@ -196,8 +196,17 @@ app.get("/api/image/generate", async (req, res) => {
   }
 });
 
-const PORT = 3001;
+// ── Serve built frontend in production ───────────────────────────────────────
+if (IS_PROD) {
+  const distPath = resolve(__dirname, "../dist");
+  if (existsSync(distPath)) {
+    app.use(express.static(distPath));
+    app.get("*", (_req, res) => res.sendFile(resolve(distPath, "index.html")));
+  }
+}
+
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`\n✦ LinkedIn OAuth server → http://localhost:${PORT}`);
-  console.log(`  Start OAuth → http://localhost:${PORT}/auth/linkedin\n`);
+  console.log(`\n✦ PostCraft AI server → ${APP_URL}`);
+  console.log(`  Environment: ${IS_PROD ? "production" : "development"}\n`);
 });

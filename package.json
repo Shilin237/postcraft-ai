@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite --port 5173 --strictPort\" \"node server/index.js\" --names \"vite,server\" --prefix-colors \"cyan,magenta\"",
-    "server": "node server/index.js",
     "build": "tsc -b && vite build",
+    "start": "NODE_ENV=production node server/index.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
