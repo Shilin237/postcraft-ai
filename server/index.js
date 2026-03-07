@@ -196,8 +196,26 @@ app.get("/api/image/generate", async (req, res) => {
   }
 });
 
-// ── Health check ─────────────────────────────────────────────────────────────
+// ── Health check (no auth needed) ────────────────────────────────────────────
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
+
+// ── Password protection (set SITE_PASSWORD env var to enable) ─────────────────
+const SITE_PASSWORD = process.env.SITE_PASSWORD;
+if (SITE_PASSWORD) {
+  app.use((req, res, next) => {
+    // Skip auth for the health check
+    if (req.path === "/health") return next();
+
+    const auth = req.headers.authorization;
+    if (auth?.startsWith("Basic ")) {
+      const decoded = Buffer.from(auth.slice(6), "base64").toString();
+      const password = decoded.split(":").slice(1).join(":");
+      if (password === SITE_PASSWORD) return next();
+    }
+    res.setHeader("WWW-Authenticate", 'Basic realm="PostCraft AI"');
+    res.status(401).send("Access denied. Password required.");
+  });
+}
 
 // ── Serve built frontend in production ───────────────────────────────────────
 if (IS_PROD) {
