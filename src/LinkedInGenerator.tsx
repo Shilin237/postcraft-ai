@@ -954,7 +954,7 @@ Output ONLY the final proofread post text.`;
                   </div>
                 )}
 
-                <button onClick={generate} disabled={loading} style={{
+                <button onClick={() => generate()} disabled={loading} style={{
                   width: "100%", padding: "20px", borderRadius: "16px", border: "none",
                   background: loading ? "rgba(255,255,255,0.1)" : `linear-gradient(135deg, ${tone.color}, ${topic.color})`,
                   color: loading ? "rgba(255,255,255,0.4)" : "#fff",

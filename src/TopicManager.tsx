@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import {
   loadStore, saveStore, resetStore, exportToExcel, importFromExcel, getNextColor,
-  type TopicStore, type Topic, type Subtopic,
+  type TopicStore, type Subtopic,
 } from "./topicStore";
 
 const EMOJI_OPTIONS = ["📌","💡","🚀","📊","🎯","💰","🧠","📚","⚡","🏆","🌱","💼","🔥","🎤","📰","📜","🏦","💸","📈","🗓️","💻","🤖","✨","🦾","⚙️","🔮","⚖️","💬","👥","❤️","🌐","🔭","🔍","📄","🔄","🛠️","📒"];
