@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { loadStore, type TopicStore } from "./topicStore";
 
 const TONES = [
   { label: "Inspirational", emoji: "🔥", color: "#FF6B35" },
@@ -8,102 +9,6 @@ const TONES = [
   { label: "Humorous",      emoji: "😄", color: "#FFD93D" },
   { label: "Analytical",    emoji: "📊", color: "#00C9A7" },
 ];
-
-const TOPICS = [
-  { label: "Leadership",       emoji: "👑", color: "#FF6B35" },
-  { label: "Career Growth",    emoji: "🚀", color: "#6C63FF" },
-  { label: "Entrepreneurship", emoji: "💡", color: "#FFD93D" },
-  { label: "Tech & AI",        emoji: "🤖", color: "#00C9A7" },
-  { label: "Productivity",     emoji: "⚡", color: "#FF3366" },
-  { label: "Personal Brand",   emoji: "✨", color: "#F7931E" },
-  { label: "Work Culture",     emoji: "🏢", color: "#6C63FF" },
-  { label: "Mindset",          emoji: "🧘", color: "#00C9A7" },
-  { label: "Software Dev",     emoji: "💻", color: "#6C63FF" },
-  { label: "Learning & AI",    emoji: "📚", color: "#00C9A7" },
-];
-
-const SUBTOPICS: Record<string, { label: string; icon: string }[]> = {
-  "Software Dev": [
-    { label: "Artificial Intelligence", icon: "🤖" },
-    { label: "AI / ML",                 icon: "🧠" },
-    { label: "Machine Learning",        icon: "📊" },
-    { label: "Gen AI",                  icon: "✨" },
-    { label: "AI Agents",               icon: "🦾" },
-    { label: "C# Development",          icon: "⚡" },
-    { label: "C# Interview Questions",  icon: "🎯" },
-    { label: "C# Optimization Tips",    icon: "🚀" },
-    { label: "Debugging Tips",          icon: "🐛" },
-    { label: "Cloud Computing",         icon: "☁️" },
-    { label: "Latest AI News",          icon: "🔥" },
-    { label: "Tech Market News",        icon: "📰" },
-  ],
-  "Tech & AI": [
-    { label: "AI Tools",       icon: "🛠️" },
-    { label: "Automation",     icon: "⚙️" },
-    { label: "Future of AI",   icon: "🔮" },
-    { label: "AI Ethics",      icon: "⚖️" },
-    { label: "LLMs",           icon: "💬" },
-    { label: "AI in Business", icon: "💼" },
-  ],
-  "Learning & AI": [
-    { label: "Learning AI",        icon: "📚" },
-    { label: "Prompt Engineering", icon: "✍️" },
-    { label: "AI for Beginners",   icon: "🌱" },
-    { label: "Upskilling",         icon: "📈" },
-    { label: "Online Courses",     icon: "🎓" },
-  ],
-  "Leadership": [
-    { label: "Team Building",       icon: "👥" },
-    { label: "Decision Making",     icon: "🎯" },
-    { label: "Leading with Empathy",icon: "❤️" },
-    { label: "Remote Leadership",   icon: "🌐" },
-    { label: "Vision & Strategy",   icon: "🔭" },
-  ],
-  "Career Growth": [
-    { label: "Job Search Tips",      icon: "🔍" },
-    { label: "Interview Tips",       icon: "🎤" },
-    { label: "Resume Tips",          icon: "📄" },
-    { label: "Salary Negotiation",   icon: "💰" },
-    { label: "Career Pivot",         icon: "🔄" },
-    { label: "LinkedIn Profile Tips",icon: "💼" },
-  ],
-  "Entrepreneurship": [
-    { label: "Startup Stories",  icon: "🚀" },
-    { label: "Fundraising",      icon: "💸" },
-    { label: "Product Launch",   icon: "🎯" },
-    { label: "Lessons Learned",  icon: "💡" },
-    { label: "Side Hustle",      icon: "⚡" },
-    { label: "Bootstrapping",    icon: "🔧" },
-  ],
-  "Productivity": [
-    { label: "Time Management",     icon: "⏰" },
-    { label: "Deep Work",           icon: "🎯" },
-    { label: "Morning Routine",     icon: "🌅" },
-    { label: "AI Productivity Tools",icon: "🤖" },
-    { label: "Work-Life Balance",   icon: "⚖️" },
-  ],
-  "Personal Brand": [
-    { label: "Content Strategy",  icon: "✍️" },
-    { label: "Thought Leadership",icon: "💡" },
-    { label: "Building Audience", icon: "👥" },
-    { label: "LinkedIn Growth",   icon: "📈" },
-    { label: "Niche Authority",   icon: "🏆" },
-  ],
-  "Work Culture": [
-    { label: "Remote Work",          icon: "🏠" },
-    { label: "Hybrid Work",          icon: "🏢" },
-    { label: "Mental Health at Work",icon: "🧘" },
-    { label: "Psychological Safety", icon: "🛡️" },
-    { label: "Team Dynamics",        icon: "🤝" },
-  ],
-  "Mindset": [
-    { label: "Growth Mindset",    icon: "🌱" },
-    { label: "Resilience",        icon: "💪" },
-    { label: "Imposter Syndrome", icon: "🎭" },
-    { label: "Overcoming Failure",icon: "🔄" },
-    { label: "Self-Discipline",   icon: "🏋️" },
-  ],
-};
 
 const FORMATS = [
   { label: "Hook + Story + CTA", icon: "🎣" },
@@ -150,9 +55,17 @@ const OUTPUT_COST_PER_TOKEN = 15 / 1_000_000;
 
 interface Particle { id: number; x: number; y: number; size: number; color: string; }
 
-export default function LinkedInGenerator() {
+export default function LinkedInGenerator({ storeVersion = 0 }: { storeVersion?: number }) {
+  const [store, setStore] = useState<TopicStore>(loadStore);
+
+  // Reload store when TopicManager makes changes
+  useEffect(() => { setStore(loadStore()); }, [storeVersion]);
+
+  const TOPICS   = store.topics;
+  const SUBTOPICS = store.subtopics;
+
   const [tone,     setTone]     = useState(TONES[0]);
-  const [topic,    setTopic]    = useState(TOPICS[0]);
+  const [topic,    setTopic]    = useState(() => store.topics[0] || TONES[0]);
   const [subtopic, setSubtopic] = useState<{ label: string; icon: string } | null>(null);
   const [format,   setFormat]   = useState(FORMATS[0]);
   const [hook,     setHook]     = useState(HOOKS[0]);
@@ -177,6 +90,7 @@ export default function LinkedInGenerator() {
     const s = localStorage.getItem("li_gen_usage");
     return s ? JSON.parse(s).requestCount      : 0;
   });
+  const [redoCount,   setRedoCount]   = useState(0);
   const [lastUsage,   setLastUsage]   = useState<{ input: number; output: number } | null>(null);
   const [usageOpen,   setUsageOpen]   = useState(false);
   const [budget,      setBudget]      = useState<number>(() => {
@@ -379,10 +293,17 @@ export default function LinkedInGenerator() {
     localStorage.setItem("li_gen_budget", String(budget));
   }, [budget]);
 
-  const generate = async () => {
+  const generate = async (isRedo = false) => {
     setError("");
     setLoading(true); setPost(""); setStep(2);
     setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+
+    const currentRedo = isRedo ? redoCount + 1 : 0;
+    if (isRedo) setRedoCount(r => r + 1);
+
+    const variationNote = isRedo
+      ? `\nIMPORTANT: This is variation #${currentRedo}. Write a COMPLETELY DIFFERENT post — use a different hook, different angle, different structure, different opening line, and different examples than any previous version. Do not reuse the same opening words or story.`
+      : "";
 
     const prompt = `You are an elite LinkedIn ghostwriter. Write viral, authentic posts.
 First person. Human and punchy. Never corporate. Max 3 hashtags.
@@ -396,7 +317,7 @@ Post specs:
 - Hook: ${hook.label}
 ${context ? `- Personal angle: ${context}` : ""}
 
-150–300 words. Hook = first line. End with soft CTA.
+150–300 words. Hook = first line. End with soft CTA.${variationNote}
 
 After writing, proofread carefully:
 - Fix any grammar or spelling mistakes
@@ -1178,7 +1099,7 @@ Output ONLY the final proofread post text.`;
                           <button onClick={copy} style={{ padding: "16px 24px", borderRadius: "14px", border: "none", background: copied ? "#00C9A7" : `linear-gradient(135deg, ${tone.color}, ${topic.color})`, color: "#fff", fontSize: "15px", fontWeight: 700, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", transition: "all 0.25s", boxShadow: `0 4px 20px ${copied ? "#00C9A744" : tone.color + "44"}`, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
                             {copied ? "✅ Copied!" : "📋 Copy Post"}
                           </button>
-                          <button onClick={generate} style={{ padding: "16px 20px", borderRadius: "14px", border: "2px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.06)", color: "#fff", fontSize: "14px", fontWeight: 600, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>↺ Redo</button>
+                          <button onClick={() => generate(true)} style={{ padding: "16px 20px", borderRadius: "14px", border: "2px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.06)", color: "#fff", fontSize: "14px", fontWeight: 600, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>↺ Refresh</button>
                           <button onClick={() => setStep(1)} style={{ padding: "16px 20px", borderRadius: "14px", border: "2px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.06)", color: "#fff", fontSize: "14px", fontWeight: 600, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>✏️ Edit</button>
                         </div>
 

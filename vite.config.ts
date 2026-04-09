@@ -11,11 +11,27 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/anthropic/, ''),
       },
+      '/api/auth': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+      '/api/generate': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
       '/api/linkedin': {
         target: 'http://localhost:3001',
         changeOrigin: true,
       },
       '/api/image': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+      '/api/carousel': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+      '/carousel-outputs': {
         target: 'http://localhost:3001',
         changeOrigin: true,
       },

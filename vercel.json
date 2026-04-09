@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/auth/linkedin",          "destination": "/api/auth/linkedin" },
+    { "source": "/auth/linkedin/callback", "destination": "/api/auth/callback" },
+    { "source": "/((?!api/).*)",           "destination": "/index.html" }
+  ]
+}

@@ -3,6 +3,7 @@ import cors from "cors";
 import { readFileSync, existsSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { carouselGenerateHandler } from "./carousel.js";
 
 // Load .env manually (no dotenv package needed in Node 20+)
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -19,6 +20,9 @@ try {
 const app = express();
 app.use(express.json());
 
+// ── Carousel generation ───────────────────────────────────────────────────────
+app.post('/api/carousel/generate', carouselGenerateHandler);
+
 const IS_PROD = process.env.NODE_ENV === "production";
 const APP_URL = process.env.APP_URL || "http://localhost:3001";
 
@@ -31,6 +35,16 @@ const CLIENT_ID     = process.env.LI_CLIENT_ID;
 const CLIENT_SECRET = process.env.LI_CLIENT_SECRET;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const REDIRECT_URI  = `${APP_URL}/auth/linkedin/callback`;
+
+// ── Login auth (credentials stay on server) ──────────────────────────────────
+app.post("/api/auth/login", (req, res) => {
+  const { username, password } = req.body || {};
+  const VALID_USER = process.env.APP_USERNAME;
+  const VALID_PASS = process.env.APP_PASSWORD;
+  if (!VALID_USER || !VALID_PASS) return res.status(500).json({ ok: false, error: "APP_USERNAME / APP_PASSWORD not set in .env" });
+  if (username === VALID_USER && password === VALID_PASS) return res.json({ ok: true });
+  return res.status(401).json({ ok: false, error: "Invalid username or password." });
+});
 
 // ── Claude API proxy (key never leaves server) ──────────────────────────────
 app.post("/api/generate", async (req, res) => {
