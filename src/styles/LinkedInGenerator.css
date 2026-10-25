@@ -1,0 +1,137 @@
+/* ── Responsive: iPad Air 5 (820px portrait) ── */
+@media (max-width: 860px) {
+  .app-header {
+    padding: 14px 20px !important;
+  }
+  .tab-content {
+    padding: 24px 20px !important;
+  }
+  .usage-modal-box {
+    max-width: calc(100% - 32px) !important;
+  }
+  .format-hook-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+}
+/* ── Responsive: iPhone 14 Pro Max (430px) ── */
+@media (max-width: 480px) {
+  .app-header {
+    padding: 10px 14px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .header-actions {
+    flex-wrap: wrap !important;
+    gap: 5px !important;
+    width: 100% !important;
+  }
+  .header-actions > button {
+    padding: 6px 10px !important;
+    font-size: 10px !important;
+  }
+  .header-subtitle {
+    display: none !important;
+  }
+  .tab-content {
+    padding: 14px !important;
+  }
+  .usage-modal-box {
+    margin: 10px !important;
+    border-radius: 16px !important;
+    max-width: calc(100% - 20px) !important;
+  }
+  .usage-modal-box > div {
+    padding: 16px !important;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .format-hook-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+  textarea,
+  input {
+    font-size: 16px !important;
+  } /* prevent iOS zoom */
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes float0 {
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(-30px);
+  }
+}
+@keyframes float1 {
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(20px);
+  }
+}
+@keyframes float2 {
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(-20px);
+  }
+}
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+* {
+  box-sizing: border-box;
+}
+button:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+button:active:not(:disabled) {
+  transform: translateY(0px) !important;
+}
+::selection {
+  background: #6c63ff;
+  color: #fff;
+}
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0d0d;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+textarea::placeholder,
+input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}

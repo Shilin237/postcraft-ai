@@ -1,73 +1,62 @@
-# React + TypeScript + Vite
+# Postcraft AI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![CI](https://github.com/Shilin237/postcraft-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Shilin237/postcraft-ai/actions/workflows/ci.yml)
 
-Currently, two official plugins are available:
+A personal content workspace for drafting LinkedIn posts, creating ten-slide carousels and organising reusable topics. React and TypeScript handle the editor; a shared Node API keeps provider credentials and LinkedIn tokens out of browser JavaScript.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+![Postcraft workspace](docs/screenshots/postcraft.png)
 
-## React Compiler
+## What it does
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* Generate editable post drafts and carousel previews with Claude.
+* Organise topics locally and import spreadsheets.
+* Connect a LinkedIn account through OAuth and explicitly publish a selected draft.
+* Use the same protected handlers in local Express and Vercel deployments.
 
-## Expanding the ESLint configuration
+This is a single-owner application. It does not provide multi-user accounts, roles or a publishing queue. Review generated claims before publishing. AI and image providers can incur costs or be unavailable.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Run locally
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Requires Node.js 22 or later and npm. An Anthropic API key is needed for generation; tests use fake providers.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+npm ci
+cp .env.example .env
+# Fill APP_USERNAME, APP_PASSWORD, SESSION_SECRET and ANTHROPIC_API_KEY.
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open http://localhost:5173. The API listens on port 3001. Generate a session secret with `openssl rand -hex 32`; never commit it. Keep `APP_URL` equal to the browser origin, including the port. Restart after editing environment variables.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+LinkedIn is optional. Set its client ID and secret, register `http://localhost:5173/api/auth/callback` locally, and select a currently supported `LINKEDIN_API_VERSION` for the Posts API. Production uses `https://your-domain/api/auth/callback`. Your LinkedIn application must have the required sign-in and publishing permissions.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Verify
+
+```sh
+npm test
+npm run format:check
+npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
+
+Server tests exercise real Express routes and the shared Vercel handler with fake providers. Browser tests exercise login, reload, tool loading and logout. They do not publish to LinkedIn or verify live provider permissions. CI runs these checks on pull requests.
+
+## Deploy
+
+Vercel builds `dist/` and serves `api/` functions. Configure the required environment variables first, with an HTTPS `APP_URL` and a new random `SESSION_SECRET`. Existing browser-only logins do not carry over. Configure both Redis REST variables when limits must be shared across instances. Default memory limits apply separately to each process and reset on restart.
+
+For a Node deployment, run `npm run build` then `npm start` with environment variables supplied by your host and TLS at the reverse proxy. Proxy `/api` and the frontend through the same browser origin.
+
+## Design and limitations
+
+| Area | Implementation |
+| --- | --- |
+| UI | React 19, TypeScript, Vite, lazy-loaded tools |
+| API | One implementation under `api/`, reused by `server/app.js` |
+| Authentication | Encrypted one-hour HttpOnly cookie, server verification, origin and CSRF checks |
+| OAuth | Random expiring state bound to the app session; encrypted LinkedIn cookie |
+| Data | Topics and draft history in browser storage; no shared database |
+| Abuse controls | Input/output bounds, provider timeouts, request limits |
+
+See [architecture](docs/architecture.md), [security](SECURITY.md) and [contributing](CONTRIBUTING.md). Larger editor components and spreadsheet parsing remain candidates for further modularisation.

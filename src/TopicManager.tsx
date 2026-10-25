@@ -1,29 +1,73 @@
-import { useState, useRef } from "react";
+import { useState, useRef } from 'react';
 import {
-  loadStore, saveStore, resetStore, exportToExcel, importFromExcel, getNextColor,
-  type TopicStore, type Subtopic,
-} from "./topicStore";
+  loadStore,
+  saveStore,
+  resetStore,
+  exportToExcel,
+  importFromExcel,
+  getNextColor,
+  type TopicStore,
+  type Subtopic,
+} from './topicStore';
 
-const EMOJI_OPTIONS = ["📌","💡","🚀","📊","🎯","💰","🧠","📚","⚡","🏆","🌱","💼","🔥","🎤","📰","📜","🏦","💸","📈","🗓️","💻","🤖","✨","🦾","⚙️","🔮","⚖️","💬","👥","❤️","🌐","🔭","🔍","📄","🔄","🛠️","📒"];
+const EMOJI_OPTIONS = [
+  '📌',
+  '💡',
+  '🚀',
+  '📊',
+  '🎯',
+  '💰',
+  '🧠',
+  '📚',
+  '⚡',
+  '🏆',
+  '🌱',
+  '💼',
+  '🔥',
+  '🎤',
+  '📰',
+  '📜',
+  '🏦',
+  '💸',
+  '📈',
+  '🗓️',
+  '💻',
+  '🤖',
+  '✨',
+  '🦾',
+  '⚙️',
+  '🔮',
+  '⚖️',
+  '💬',
+  '👥',
+  '❤️',
+  '🌐',
+  '🔭',
+  '🔍',
+  '📄',
+  '🔄',
+  '🛠️',
+  '📒',
+];
 
 interface Props {
   onStoreChange: () => void;
 }
 
 export default function TopicManager({ onStoreChange }: Props) {
-  const [store, setStore]         = useState<TopicStore>(loadStore);
+  const [store, setStore] = useState<TopicStore>(loadStore);
   const [selectedTopic, setSelected] = useState<string | null>(null);
-  const [newTopicLabel, setNewTopicLabel] = useState("");
-  const [newTopicEmoji, setNewTopicEmoji] = useState("📌");
-  const [newSubLabel, setNewSubLabel]     = useState("");
-  const [newSubIcon, setNewSubIcon]       = useState("📌");
-  const [toast, setToast]         = useState("");
+  const [newTopicLabel, setNewTopicLabel] = useState('');
+  const [newTopicEmoji, setNewTopicEmoji] = useState('📌');
+  const [newSubLabel, setNewSubLabel] = useState('');
+  const [newSubIcon, setNewSubIcon] = useState('📌');
+  const [toast, setToast] = useState('');
   const [importing, setImporting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const showToast = (msg: string) => {
     setToast(msg);
-    setTimeout(() => setToast(""), 2500);
+    setTimeout(() => setToast(''), 2500);
   };
 
   const persist = (next: TopicStore) => {
@@ -36,20 +80,28 @@ export default function TopicManager({ onStoreChange }: Props) {
   const addTopic = () => {
     const label = newTopicLabel.trim();
     if (!label) return;
-    if (store.topics.find(t => t.label === label)) return showToast("Topic already exists.");
+    if (store.topics.find((t) => t.label === label))
+      return showToast('Topic already exists.');
     const next: TopicStore = {
-      topics: [...store.topics, { label, emoji: newTopicEmoji, color: getNextColor(store.topics) }],
+      topics: [
+        ...store.topics,
+        { label, emoji: newTopicEmoji, color: getNextColor(store.topics) },
+      ],
       subtopics: { ...store.subtopics, [label]: [] },
     };
     persist(next);
-    setNewTopicLabel("");
-    setNewTopicEmoji("📌");
+    setNewTopicLabel('');
+    setNewTopicEmoji('📌');
     showToast(`"${label}" added.`);
   };
 
   const removeTopic = (label: string) => {
-    const { [label]: _, ...rest } = store.subtopics;
-    persist({ topics: store.topics.filter(t => t.label !== label), subtopics: rest });
+    const rest = { ...store.subtopics };
+    delete rest[label];
+    persist({
+      topics: store.topics.filter((t) => t.label !== label),
+      subtopics: rest,
+    });
     if (selectedTopic === label) setSelected(null);
     showToast(`"${label}" removed.`);
   };
@@ -60,26 +112,38 @@ export default function TopicManager({ onStoreChange }: Props) {
     const label = newSubLabel.trim();
     if (!label) return;
     const existing = store.subtopics[selectedTopic] || [];
-    if (existing.find(s => s.label === label)) return showToast("Subtopic already exists.");
+    if (existing.find((s) => s.label === label))
+      return showToast('Subtopic already exists.');
     persist({
       ...store,
-      subtopics: { ...store.subtopics, [selectedTopic]: [...existing, { label, icon: newSubIcon }] },
+      subtopics: {
+        ...store.subtopics,
+        [selectedTopic]: [...existing, { label, icon: newSubIcon }],
+      },
     });
-    setNewSubLabel("");
-    setNewSubIcon("📌");
+    setNewSubLabel('');
+    setNewSubIcon('📌');
     showToast(`"${label}" added.`);
   };
 
   const removeSubtopic = (topic: string, subLabel: string) => {
     persist({
       ...store,
-      subtopics: { ...store.subtopics, [topic]: (store.subtopics[topic] || []).filter(s => s.label !== subLabel) },
+      subtopics: {
+        ...store.subtopics,
+        [topic]: (store.subtopics[topic] || []).filter(
+          (s) => s.label !== subLabel,
+        ),
+      },
     });
     showToast(`"${subLabel}" removed.`);
   };
 
   // ── Excel ──
-  const handleExport = () => { exportToExcel(store); showToast("Exported to postcraft_topics.xlsx"); };
+  const handleExport = () => {
+    exportToExcel(store);
+    showToast('Exported to postcraft_topics.xlsx');
+  };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,25 +154,28 @@ export default function TopicManager({ onStoreChange }: Props) {
       setStore(next);
       onStoreChange();
       setSelected(null);
-      showToast("Imported successfully.");
+      showToast('Imported successfully.');
     } catch (err: unknown) {
-      showToast(`Import failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      showToast(
+        `Import failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      );
     } finally {
       setImporting(false);
-      if (fileRef.current) fileRef.current.value = "";
+      if (fileRef.current) fileRef.current.value = '';
     }
   };
 
   const handleReset = () => {
-    if (!confirm("Reset all topics to defaults? This cannot be undone.")) return;
+    if (!confirm('Reset all topics to defaults? This cannot be undone.'))
+      return;
     const fresh = resetStore();
     setStore(fresh);
     setSelected(null);
     onStoreChange();
-    showToast("Reset to defaults.");
+    showToast('Reset to defaults.');
   };
 
-  const subs = selectedTopic ? (store.subtopics[selectedTopic] || []) : [];
+  const subs = selectedTopic ? store.subtopics[selectedTopic] || [] : [];
 
   return (
     <>
@@ -150,16 +217,29 @@ export default function TopicManager({ onStoreChange }: Props) {
           <div className="tm-section-title">Topics ({store.topics.length})</div>
 
           <div>
-            {store.topics.map(t => (
+            {store.topics.map((t) => (
               <div
                 key={t.label}
-                className={`tm-topic-item${selectedTopic === t.label ? " active" : ""}`}
+                className={`tm-topic-item${selectedTopic === t.label ? ' active' : ''}`}
                 onClick={() => setSelected(t.label)}
               >
                 <span>{t.emoji}</span>
-                <span className="tm-topic-label" style={{ color: t.color }}>{t.label}</span>
-                <span className="tm-badge">{(store.subtopics[t.label] || []).length}</span>
-                <button className="tm-remove-btn" onClick={e => { e.stopPropagation(); removeTopic(t.label); }} title="Remove topic">✕</button>
+                <span className="tm-topic-label" style={{ color: t.color }}>
+                  {t.label}
+                </span>
+                <span className="tm-badge">
+                  {(store.subtopics[t.label] || []).length}
+                </span>
+                <button
+                  className="tm-remove-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeTopic(t.label);
+                  }}
+                  title="Remove topic"
+                >
+                  ✕
+                </button>
               </div>
             ))}
           </div>
@@ -167,58 +247,149 @@ export default function TopicManager({ onStoreChange }: Props) {
           <div className="tm-divider" />
 
           <div className="tm-section-title">Add Topic</div>
-          <div style={{ display: "flex", gap: 6 }}>
-            <select className="tm-select" value={newTopicEmoji} onChange={e => setNewTopicEmoji(e.target.value)}>
-              {EMOJI_OPTIONS.map(em => <option key={em} value={em}>{em}</option>)}
+          <div style={{ display: 'flex', gap: 6 }}>
+            <select
+              className="tm-select"
+              value={newTopicEmoji}
+              onChange={(e) => setNewTopicEmoji(e.target.value)}
+            >
+              {EMOJI_OPTIONS.map((em) => (
+                <option key={em} value={em}>
+                  {em}
+                </option>
+              ))}
             </select>
-            <input className="tm-input" value={newTopicLabel} onChange={e => setNewTopicLabel(e.target.value)} placeholder="Topic name" onKeyDown={e => e.key === "Enter" && addTopic()} />
+            <input
+              className="tm-input"
+              value={newTopicLabel}
+              onChange={(e) => setNewTopicLabel(e.target.value)}
+              placeholder="Topic name"
+              onKeyDown={(e) => e.key === 'Enter' && addTopic()}
+            />
           </div>
-          <button className="tm-add-btn" onClick={addTopic} disabled={!newTopicLabel.trim()}>+ Add Topic</button>
+          <button
+            className="tm-add-btn"
+            onClick={addTopic}
+            disabled={!newTopicLabel.trim()}
+          >
+            + Add Topic
+          </button>
 
           <div className="tm-divider" />
 
           <div className="tm-section-title">Excel</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <button className="tm-action-btn success" onClick={handleExport}>⬇ Export to Excel</button>
-            <button className="tm-action-btn" onClick={() => fileRef.current?.click()} disabled={importing}>
-              {importing ? "Importing…" : "⬆ Import from Excel"}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <button className="tm-action-btn success" onClick={handleExport}>
+              ⬇ Export to Excel
             </button>
-            <input ref={fileRef} type="file" accept=".xlsx,.xls" style={{ display: "none" }} onChange={handleImport} />
+            <button
+              className="tm-action-btn"
+              onClick={() => fileRef.current?.click()}
+              disabled={importing}
+            >
+              {importing ? 'Importing…' : '⬆ Import from Excel'}
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".xlsx,.xls"
+              style={{ display: 'none' }}
+              onChange={handleImport}
+            />
           </div>
 
           <div className="tm-divider" />
-          <button className="tm-action-btn danger" onClick={handleReset}>↺ Reset to Defaults</button>
+          <button className="tm-action-btn danger" onClick={handleReset}>
+            ↺ Reset to Defaults
+          </button>
         </aside>
 
         {/* ── RIGHT: subtopics for selected topic ── */}
         <main className="tm-main">
           {!selectedTopic ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60%", gap: 14 }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '60%',
+                gap: 14,
+              }}
+            >
               <div style={{ fontSize: 40, opacity: 0.15 }}>◈</div>
-              <div style={{ fontFamily: "'Courier New', monospace", fontSize: 10, textTransform: "uppercase", letterSpacing: 2, color: "#2e2e52" }}>Select a topic to manage its subtopics</div>
+              <div
+                style={{
+                  fontFamily: "'Courier New', monospace",
+                  fontSize: 10,
+                  textTransform: 'uppercase',
+                  letterSpacing: 2,
+                  color: '#2e2e52',
+                }}
+              >
+                Select a topic to manage its subtopics
+              </div>
             </div>
           ) : (
             <>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
-                <div style={{ fontSize: 28 }}>{store.topics.find(t => t.label === selectedTopic)?.emoji}</div>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  marginBottom: 28,
+                }}
+              >
+                <div style={{ fontSize: 28 }}>
+                  {store.topics.find((t) => t.label === selectedTopic)?.emoji}
+                </div>
                 <div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: store.topics.find(t => t.label === selectedTopic)?.color }}>{selectedTopic}</div>
-                  <div style={{ fontFamily: "'Courier New', monospace", fontSize: 9, color: "#444", letterSpacing: 2, textTransform: "uppercase" }}>{subs.length} subtopic{subs.length !== 1 ? "s" : ""}</div>
+                  <div
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 700,
+                      color: store.topics.find((t) => t.label === selectedTopic)
+                        ?.color,
+                    }}
+                  >
+                    {selectedTopic}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "'Courier New', monospace",
+                      fontSize: 9,
+                      color: '#444',
+                      letterSpacing: 2,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {subs.length} subtopic{subs.length !== 1 ? 's' : ''}
+                  </div>
                 </div>
               </div>
 
               {/* Subtopic chips */}
               <div style={{ marginBottom: 28 }}>
-                <div className="tm-section-title" style={{ marginBottom: 12 }}>Subtopics</div>
+                <div className="tm-section-title" style={{ marginBottom: 12 }}>
+                  Subtopics
+                </div>
                 {subs.length === 0 ? (
-                  <div className="tm-empty">No subtopics yet. Add one below.</div>
+                  <div className="tm-empty">
+                    No subtopics yet. Add one below.
+                  </div>
                 ) : (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 0 }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 0 }}>
                     {subs.map((s: Subtopic) => (
                       <div key={s.label} className="tm-sub-chip">
                         <span>{s.icon}</span>
                         <span>{s.label}</span>
-                        <button className="tm-sub-remove" onClick={() => removeSubtopic(selectedTopic, s.label)} title="Remove">✕</button>
+                        <button
+                          className="tm-sub-remove"
+                          onClick={() => removeSubtopic(selectedTopic, s.label)}
+                          title="Remove"
+                        >
+                          ✕
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -226,21 +397,42 @@ export default function TopicManager({ onStoreChange }: Props) {
               </div>
 
               {/* Add subtopic */}
-              <div style={{ background: "rgba(10,10,26,0.6)", border: "1px solid #1a1a2e", borderRadius: 10, padding: "20px 24px" }}>
-                <div className="tm-section-title" style={{ marginBottom: 14 }}>Add Subtopic to "{selectedTopic}"</div>
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                  <select className="tm-select" value={newSubIcon} onChange={e => setNewSubIcon(e.target.value)}>
-                    {EMOJI_OPTIONS.map(em => <option key={em} value={em}>{em}</option>)}
+              <div
+                style={{
+                  background: 'rgba(10,10,26,0.6)',
+                  border: '1px solid #1a1a2e',
+                  borderRadius: 10,
+                  padding: '20px 24px',
+                }}
+              >
+                <div className="tm-section-title" style={{ marginBottom: 14 }}>
+                  Add Subtopic to "{selectedTopic}"
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <select
+                    className="tm-select"
+                    value={newSubIcon}
+                    onChange={(e) => setNewSubIcon(e.target.value)}
+                  >
+                    {EMOJI_OPTIONS.map((em) => (
+                      <option key={em} value={em}>
+                        {em}
+                      </option>
+                    ))}
                   </select>
                   <input
                     className="tm-input"
                     value={newSubLabel}
-                    onChange={e => setNewSubLabel(e.target.value)}
+                    onChange={(e) => setNewSubLabel(e.target.value)}
                     placeholder="Subtopic name"
-                    onKeyDown={e => e.key === "Enter" && addSubtopic()}
+                    onKeyDown={(e) => e.key === 'Enter' && addSubtopic()}
                     style={{ flex: 1 }}
                   />
-                  <button className="tm-add-btn" onClick={addSubtopic} disabled={!newSubLabel.trim()}>
+                  <button
+                    className="tm-add-btn"
+                    onClick={addSubtopic}
+                    disabled={!newSubLabel.trim()}
+                  >
                     + Add
                   </button>
                 </div>
