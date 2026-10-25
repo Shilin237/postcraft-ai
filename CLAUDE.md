@@ -1,31 +1,15 @@
-# LinkedIn Post Generator — Project Guide
+# Postcraft AI project guide
 
-## Stack
-- Vite 7 + React 19 + TypeScript
-- No UI library — all styles are inline or `<style>` JSX blocks inside the component
-- Claude Sonnet 4.6 API via Anthropic (`/api/anthropic` proxy in vite.config.ts)
-- Single component file: `src/LinkedInGenerator.tsx`
+Read README.md, SECURITY.md and docs/architecture.md before changing authentication or deployment.
 
-## Running
-```bash
-npm run dev      # http://localhost:5173
-npm run build    # production build
-```
+The stack is React 19, TypeScript and Vite with lazy-loaded tools. Static component CSS lives in src/styles. API logic lives in api/ and is mounted unchanged by server/app.js. Server secrets come from environment variables, never browser input. The Vite proxy only forwards to the local API server. Use src/api.ts for authenticated client requests and withSession for protected server routes.
 
-## Vite Proxy (CORS fix)
-All API calls go through `/api/anthropic` → `https://api.anthropic.com`.
-Defined in `vite.config.ts`. Required header: `anthropic-dangerous-direct-browser-access: true`.
-
-## API Key
-User pastes their own `sk-ant-...` key into the UI. Not stored — session memory only.
-Pricing tracked client-side: $3/MTok input, $15/MTok output (claude-sonnet-4-6).
-
----
+Run npm test, npm run format:check, npm run build and npm run test:e2e before opening a PR. Automated tests use fake providers and must never publish real posts.
 
 ## UI Design System
 
 ### Philosophy
-Futuristic dark-space aesthetic. Production-grade, not a demo. Every element must feel intentional.
+Futuristic dark-space aesthetic. A personal content workspace. Every element must feel intentional.
 
 ### Color Palette
 | Role | Value |

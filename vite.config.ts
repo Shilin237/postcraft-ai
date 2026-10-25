@@ -1,44 +1,11 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-// https://vite.dev/config/
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api/anthropic': {
-        target: 'https://api.anthropic.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/anthropic/, ''),
-      },
-      '/api/auth': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
-      '/api/generate': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
-      '/api/linkedin': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
-      '/api/image': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
-      '/api/carousel': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
-      '/carousel-outputs': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
-      '/auth/linkedin': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
+      '/api': 'http://localhost:3001',
+      '/auth': 'http://localhost:3001',
     },
   },
-})
+});
